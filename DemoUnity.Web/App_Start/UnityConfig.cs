@@ -1,3 +1,4 @@
+using DemoUnity.ServiceClients.Unity.Commons;
 using DemoUnity.Web.Services;
 using System;
 using Unity;
@@ -43,6 +44,8 @@ namespace DemoUnity.Web
             // TODO: Register your type's mappings here.
             // container.RegisterType<IProductRepository, ProductRepository>();
             container.RegisterType<ITestService, TestService>();
+
+            container = IoCConfig.PopulateToUnityContainer(container);
         }
     }
 }
