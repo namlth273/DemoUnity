@@ -21,7 +21,7 @@ namespace DemoUnity.ServiceClients.Services
         {
             Console.WriteLine("Hello");
 
-            var response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/posts"));
+            var response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/identity"));
 
             response.EnsureSuccessStatusCode();
 
@@ -38,8 +38,8 @@ namespace DemoUnity.ServiceClients.Services
 
         public class Post : IPost
         {
-            public int Id { get; set; }
-            public string Title { get; set; }
+            public string Type { get; set; }
+            public string Value { get; set; }
         }
     }
 }

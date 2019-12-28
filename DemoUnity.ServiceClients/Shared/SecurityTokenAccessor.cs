@@ -1,6 +1,8 @@
 ﻿using DemoUnity.ServiceClients.Abstractions.Shared;
+using IdentityModel.Client;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace DemoUnity.ServiceClients.Shared
@@ -8,11 +10,13 @@ namespace DemoUnity.ServiceClients.Shared
     public class SecurityTokenAccessor : ISecurityTokenAccessor
     {
         private readonly IMemoryCache _memoryCache;
-        private const string AccessTokenKey = "AcessToken";
+        private readonly IHttpClientFactory _httpClientFactory;
+        private const string AccessTokenKey = "DemoUnity.AccessToken";
 
-        public SecurityTokenAccessor(IMemoryCache memoryCache)
+        public SecurityTokenAccessor(IMemoryCache memoryCache, IHttpClientFactory httpClientFactory)
         {
             _memoryCache = memoryCache;
+            _httpClientFactory = httpClientFactory;
         }
 
         public Task<string> GetAccessTokenFromCacheAsync()
@@ -21,13 +25,28 @@ namespace DemoUnity.ServiceClients.Shared
             return Task.FromResult(accessToken);
         }
 
-        public Task<AccessToken> RenewAccessTokenAsync()
+        public async Task<AccessToken> RenewAccessTokenAsync()
         {
-            _memoryCache.Set(AccessTokenKey, Guid.NewGuid().ToString());
-            return Task.FromResult(new AccessToken
+            var tokenResponse = await _httpClientFactory.CreateClient().RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
-                Token = Guid.NewGuid().ToString()
+                Address = "http://localhost:10000/connect/token",
+                ClientId = "client",
+                ClientSecret = "secret",
+
+                Scope = "api1"
             });
+
+            if (tokenResponse.IsError)
+            {
+                throw new Exception(tokenResponse.Error);
+            }
+
+            _memoryCache.Set(AccessTokenKey, tokenResponse.AccessToken);
+
+            return new AccessToken
+            {
+                Token = tokenResponse.AccessToken
+            };
         }
     }
 }

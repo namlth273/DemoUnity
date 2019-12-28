@@ -10,7 +10,7 @@ namespace DemoUnity.ServiceClients.Abstractions.Services
 
     public interface IPost
     {
-        int Id { get; set; }
-        string Title { get; set; }
+        string Type { get; set; }
+        string Value { get; set; }
     }
 }

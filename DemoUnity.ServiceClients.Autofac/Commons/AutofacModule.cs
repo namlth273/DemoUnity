@@ -18,15 +18,15 @@ namespace DemoUnity.ServiceClients.Autofac.Commons
 
             services.AddHttpClient<ITestServiceClient, TestServiceClient>(client =>
                 {
-                    client.BaseAddress = new Uri("https://jsonplaceholder.typicode.com");
+                    client.BaseAddress = new Uri("https://localhost:44351");
                 })
                 .AddHttpMessageHandler<AuthenticationHandler>();
 
             builder.Populate(services);
 
-            builder.RegisterType<MemoryCache>().As<IMemoryCache>();
+            builder.RegisterType<MemoryCache>().As<IMemoryCache>().SingleInstance();
             builder.RegisterType<SecurityTokenAccessor>().As<ISecurityTokenAccessor>();
-            builder.RegisterDecorator<SecurityTokenDecorator, ISecurityTokenAccessor>();
+            //builder.RegisterDecorator<SecurityTokenDecorator, ISecurityTokenAccessor>();
             builder.RegisterType<AuthenticationHandler>();
 
         }
