@@ -1,7 +1,5 @@
 ﻿using DemoUnity.ServiceClients.Abstractions.Shared;
 using Polly;
-using Polly.Retry;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -12,19 +10,17 @@ namespace DemoUnity.ServiceClients.Shared
     public class AuthenticationHandler : DelegatingHandler
     {
         private readonly int _retryCount = 1;
-        private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
+        private readonly IAsyncPolicy<HttpResponseMessage> _policy;
         private readonly ISecurityTokenAccessor _securityTokenAccessor;
         private AuthenticationHeaderValue _authenticationHeader;
         private IAccessToken _accessToken;
 
-        public AuthenticationHandler(ISecurityTokenAccessor securityTokenAccessor)
+        public AuthenticationHandler(ISecurityTokenAccessor securityTokenAccessor, IPolicyFactory policyFactory)
         {
             _securityTokenAccessor = securityTokenAccessor;
 
             // Create a policy that tries to renew the access token if a 403 Unauthorized is received.
-            _policy = Policy
-                .HandleResult<HttpResponseMessage>(r => r.StatusCode == HttpStatusCode.Unauthorized)
-                .RetryAsync(_retryCount, async (result, retryCount, context) => await AuthenticateAsync());
+            _policy = policyFactory.CreateRetryPolicy(AuthenticateAsync());
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
