@@ -1,4 +1,8 @@
-﻿namespace DemoUnity.ServiceClients.Abstractions.Shared
+﻿using Polly;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace DemoUnity.ServiceClients.Abstractions.Shared
 {
     public interface IAccessToken
     {
@@ -8,5 +12,10 @@
     public class AccessToken : IAccessToken
     {
         public string Token { get; set; }
+    }
+
+    public interface IPolicyFactory
+    {
+        IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(Task delegatingAction, int retryCount = 1);
     }
 }

@@ -1,15 +1,11 @@
-﻿using Polly;
+﻿using DemoUnity.ServiceClients.Abstractions.Shared;
+using Polly;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace DemoUnity.ServiceClients.Shared
 {
-    public interface IPolicyFactory
-    {
-        IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(Task delegatingAction, int retryCount = 1);
-    }
-
     public class PolicyFactory : IPolicyFactory
     {
         public IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(Task delegatingAction, int retryCount = 1)
