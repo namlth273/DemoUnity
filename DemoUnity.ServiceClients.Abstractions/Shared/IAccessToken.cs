@@ -16,6 +16,7 @@ namespace DemoUnity.ServiceClients.Abstractions.Shared
 
     public interface IPolicyFactory
     {
+        IAsyncPolicy CreateExceptionPolicy(Task delegatingAction, int retryCount = 1);
         IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(Task delegatingAction, int retryCount = 1);
     }
 }

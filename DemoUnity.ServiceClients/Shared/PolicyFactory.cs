@@ -8,6 +8,12 @@ namespace DemoUnity.ServiceClients.Shared
 {
     public class PolicyFactory : IPolicyFactory
     {
+        public IAsyncPolicy CreateExceptionPolicy(Task delegatingAction, int retryCount = 1)
+        {
+            return Policy.Handle<AccessTokenNotFoundException>()
+                .RetryAsync(retryCount, async (result, count, context) => await delegatingAction);
+        }
+
         public IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(Task delegatingAction, int retryCount = 1)
         {
             return Policy
@@ -18,6 +24,11 @@ namespace DemoUnity.ServiceClients.Shared
 
     public class NoOpPolicyFactory : IPolicyFactory
     {
+        public IAsyncPolicy CreateExceptionPolicy(Task delegatingAction, int retryCount = 1)
+        {
+            return Policy.NoOpAsync();
+        }
+
         public IAsyncPolicy<HttpResponseMessage> CreateRetryPolicy(Task delegatingAction, int retryCount = 1)
         {
             return Policy.NoOpAsync<HttpResponseMessage>();

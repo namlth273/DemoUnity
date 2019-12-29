@@ -26,7 +26,7 @@ namespace DemoUnity.ServiceClients.Autofac.Commons
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().SingleInstance();
             builder.RegisterType<SecurityTokenAccessor>().As<ISecurityTokenAccessor>();
-            //builder.RegisterDecorator<SecurityTokenDecorator, ISecurityTokenAccessor>();
+            builder.RegisterDecorator<SecurityTokenDecorator, ISecurityTokenAccessor>();
             builder.RegisterType<AuthenticationHandler>();
             builder.RegisterType<PolicyFactory>().As<IPolicyFactory>();
             //builder.RegisterType<NoOpPolicyFactory>().As<IPolicyFactory>();

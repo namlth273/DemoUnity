@@ -12,36 +12,27 @@ namespace DemoUnity.ServiceClients.Shared
         private readonly int _retryCount = 1;
         private readonly IAsyncPolicy<HttpResponseMessage> _policy;
         private readonly ISecurityTokenAccessor _securityTokenAccessor;
-        private AuthenticationHeaderValue _authenticationHeader;
-        private IAccessToken _accessToken;
 
         public AuthenticationHandler(ISecurityTokenAccessor securityTokenAccessor, IPolicyFactory policyFactory)
         {
             _securityTokenAccessor = securityTokenAccessor;
 
             // Create a policy that tries to renew the access token if a 403 Unauthorized is received.
-            _policy = policyFactory.CreateRetryPolicy(AuthenticateAsync());
+            _policy = policyFactory.CreateExceptionPolicy(AuthenticateAsync()).WrapAsync(
+                policyFactory.CreateRetryPolicy(AuthenticateAsync()));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            // Request an access token if we don't have one yet or if it has expired.
-            if (request.Headers.Authorization == null)
-            {
-                _accessToken = new AccessToken
-                {
-                    Token = await _securityTokenAccessor.GetAccessTokenFromCacheAsync(),
-                };
-                _authenticationHeader = new AuthenticationHeaderValue("Bearer", _accessToken.Token);
-            }
-
             // Try to perform the request, re-authenticating gracefully if the call fails due to an expired or revoked access token.
-            var result = await _policy.ExecuteAndCaptureAsync(() =>
+            var result = await _policy.ExecuteAndCaptureAsync(async () =>
             {
-                request.Headers.Authorization = _authenticationHeader;
-                return base.SendAsync(request, cancellationToken);
+                var token = await _securityTokenAccessor.GetAccessTokenFromCacheAsync();
+                var authenticationHeader = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Authorization = authenticationHeader;
+                return await base.SendAsync(request, cancellationToken);
             });
 
             // Handle HTTP response
@@ -61,10 +52,9 @@ namespace DemoUnity.ServiceClients.Shared
         /// Renew access token and set to AuthenticationHeader object.
         /// </summary>
         /// <returns></returns>
-        private async Task AuthenticateAsync()
+        private Task AuthenticateAsync()
         {
-            _accessToken = await _securityTokenAccessor.RenewAccessTokenAsync();
-            _authenticationHeader = new AuthenticationHeaderValue("Bearer", _accessToken.Token);
+            return _securityTokenAccessor.RenewAccessTokenAsync();
         }
     }
 }
