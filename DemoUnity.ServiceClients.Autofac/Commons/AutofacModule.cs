@@ -22,6 +22,11 @@ namespace DemoUnity.ServiceClients.Autofac.Commons
                 })
                 .AddHttpMessageHandler<AuthenticationHandler>();
 
+            services.AddHttpClient<IVestorlyAuthenticationServiceClient, VestorlyAuthenticationServiceClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://staging.vestorly.com");
+            });
+
             builder.Populate(services);
 
             builder.RegisterType<MemoryCache>().As<IMemoryCache>().SingleInstance();

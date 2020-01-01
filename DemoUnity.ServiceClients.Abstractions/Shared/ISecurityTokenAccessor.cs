@@ -7,4 +7,9 @@ namespace DemoUnity.ServiceClients.Abstractions.Shared
         Task<string> GetAccessTokenFromCacheAsync();
         Task<AccessToken> RenewAccessTokenAsync();
     }
+
+    public interface IVestorlySecurityTokenAccessor : ISecurityTokenAccessor
+    {
+
+    }
 }
